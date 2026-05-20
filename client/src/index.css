@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+
+
+:root {
+  --bg: #020617;          /* slate-950 */
+  --bg-elevated: #020617;
+  --surface: #020617;
+  --surface-soft: #020617;
+  --border-subtle: #1e293b;
+  --border-strong: #0f172a;
+  --text-main: #e5e7eb;
+  --text-muted: #9ca3af;
+  --accent: #22c55e;      /* emerald-500 */
+  --accent-soft: #16a34a;
+}
+
+body {
+  @apply bg-slate-950 text-slate-50 antialiased;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+}
+
+.button-primary {
+  @apply inline-flex items-center justify-center rounded-lg bg-emerald-500 text-slate-950 text-xs md:text-sm font-medium px-3 py-2 shadow-sm transition;
+}
+.button-primary:hover {
+  @apply bg-emerald-400 shadow-md;
+}
+.button-primary:active {
+  transform: translateY(0.5px) scale(0.99);
+}
+.button-outline {
+  @apply inline-flex items-center justify-center rounded-lg border border-slate-800 text-xs md:text-sm text-slate-300 px-3 py-2 transition;
+}
+.button-outline:hover {
+  @apply bg-slate-900/80 border-slate-700;
+}
