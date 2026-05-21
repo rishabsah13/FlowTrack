@@ -6,6 +6,7 @@ import Sidebar from "../components/layout/Sidebar";
 import Navbar from "../components/layout/Navbar";
 import Spinner from "../components/common/Spinner";
 
+
 const PLANS = [
   {
     key: "basic",
@@ -35,17 +36,27 @@ const PLANS = [
 ];
 
 const PricingPage = () => {
-  const { user, token, login } = useAuth();
+  const { user, token, login, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loadingPlan, setLoadingPlan] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const razorpayLoaded = useRazorpayScript();
   const [toast, setToast] = useState(null);
-
   const handleBuy = async (planKey) => {
     if (!token) {
       setError("You must be logged in to purchase a plan.");
+      return;
+    }
+
+    // Extra guard: don't start payment if this is already the active plan
+    const currentPlan = user?.subscriptionPlan || "free";
+    const isSubscribed = user?.subscriptionStatus === "active";
+    const mappedKey = planKey === "basic" ? "pro" : planKey; // keep your mapping logic
+    const isCurrent = isSubscribed && currentPlan === mappedKey;
+
+    if (isCurrent) {
+      setMessage("You are already on this plan.");
       return;
     }
 
@@ -112,7 +123,21 @@ const PricingPage = () => {
       rzp.open();
     } catch (err) {
       console.error("Create order error:", err);
-      setError(err.message || "Unable to start payment.");
+
+      const msg = err?.message || "";
+
+      if (
+        msg.toLowerCase().includes("invalid token") ||
+        msg.toLowerCase().includes("expired token")
+      ) {
+        // Clear auth, so app stops using a dead token
+        logout();
+        setError("Your session has expired. Please sign in again.");
+        // Optional: redirect to login page if you have one
+      } else {
+        setError(msg || "Unable to start payment.");
+      }
+
       setLoadingPlan("");
     }
   };

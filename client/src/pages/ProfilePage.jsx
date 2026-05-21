@@ -6,7 +6,7 @@ import Navbar from "../components/layout/Navbar";
 import Spinner from "../components/common/Spinner";
 
 const ProfilePage = () => {
-  const { user: authUser, token, login } = useAuth();
+  const { user: authUser, token, login, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [form, setForm] = useState({
     name: authUser?.name || "",
@@ -26,13 +26,23 @@ const ProfilePage = () => {
         const data = await getCurrentUser(token);
         setForm({ name: data.user.name, email: data.user.email });
       } catch (err) {
-        setError(err.message);
+        const msg = err?.message || "";
+        if (
+          msg.toLowerCase().includes("invalid token") ||
+          msg.toLowerCase().includes("expired token")
+        ) {
+          // Session is not valid anymore: clear auth
+          logout();
+          setError("Your session has expired. Please sign in again.");
+        } else {
+          setError(msg || "Failed to load profile.");
+        }
       } finally {
         setLoading(false);
       }
     };
     load();
-  }, [token]);
+  }, [token, logout]);
 
   const handleChange = (e) => {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
@@ -51,7 +61,16 @@ const ProfilePage = () => {
       login(token, data.user);
       setMessage("Profile updated successfully");
     } catch (err) {
-      setError(err.message);
+      const msg = err?.message || "";
+      if (
+        msg.toLowerCase().includes("invalid token") ||
+        msg.toLowerCase().includes("expired token")
+      ) {
+        logout();
+        setError("Your session has expired. Please sign in again.");
+      } else {
+        setError(msg || "Failed to update profile.");
+      }
     } finally {
       setSaving(false);
     }

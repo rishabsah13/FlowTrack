@@ -10,7 +10,7 @@ const signToken = (user) => {
   return jwt.sign(
     { userId: user._id, email: user.email },
     process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRES_IN || "1d" }
+    { expiresIn: process.env.JWT_EXPIRES_IN || "1d" },
   );
 };
 
@@ -37,7 +37,15 @@ router.post("/signup", async (req, res) => {
 
     res.status(201).json({
       token,
-      user: { id: user._id, name: user.name, email: user.email }
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        subscriptionPlan: user.subscriptionPlan || "free",
+        subscriptionStatus: user.subscriptionStatus || "inactive",
+        subscriptionRazorpayOrderId: user.subscriptionRazorpayOrderId,
+        subscriptionRazorpayPaymentId: user.subscriptionRazorpayPaymentId,
+      },
     });
   } catch (err) {
     console.error("Signup error:", err);
@@ -68,16 +76,21 @@ router.post("/login", async (req, res) => {
 
     res.json({
       token,
-      user: { id: user._id, name: user.name, email: user.email }
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        subscriptionPlan: user.subscriptionPlan,
+        subscriptionStatus: user.subscriptionStatus,
+        subscriptionRazorpayOrderId: user.subscriptionRazorpayOrderId,
+        subscriptionRazorpayPaymentId: user.subscriptionRazorpayPaymentId,
+      },
     });
   } catch (err) {
     console.error("Login error:", err);
     res.status(500).json({ error: "Server error" });
   }
 });
-
-
-
 
 // GET /api/auth/me  (protected - get current user)
 router.get("/me", authRequired, async (req, res) => {
@@ -103,7 +116,10 @@ router.put("/me", authRequired, async (req, res) => {
     }
 
     // Check if email is used by someone else
-    const existing = await User.findOne({ email, _id: { $ne: req.user.userId } });
+    const existing = await User.findOne({
+      email,
+      _id: { $ne: req.user.userId },
+    });
     if (existing) {
       return res.status(409).json({ error: "Email already in use" });
     }
@@ -111,7 +127,7 @@ router.put("/me", authRequired, async (req, res) => {
     const updated = await User.findByIdAndUpdate(
       req.user.userId,
       { name, email },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     ).select("-passwordHash");
 
     res.json({ user: updated });
