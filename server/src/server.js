@@ -21,14 +21,13 @@ const allowedOrigins = [
 // Plain JS: no type annotation here
 const corsOptions = {
   origin: (origin, callback) => {
-    // allow non-browser tools (no origin) and listed origins
-    if (!origin || allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    return callback(new Error("Not allowed by CORS"));
+    // allow any web origin (including Vercel previews)
+    return callback(null, true);
   },
   credentials: true,
 };
+
+app.use(cors(corsOptions));
 
 app.use(cors(corsOptions));
 
