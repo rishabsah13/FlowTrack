@@ -11,6 +11,23 @@ connectDB();
 
 const app = express();
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://flow-track-brown.vercel.app", // old (optional)
+  "https://flow-track-5symtv66b-rishabsah13s-projects.vercel.app", // NEW
+];
+
+const corsOptions: cors.CorsOptions = {
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error("Not allowed by CORS"));
+  },
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 app.use(
   cors({
     origin: process.env.CLIENT_URL,
