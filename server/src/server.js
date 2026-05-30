@@ -31,14 +31,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.use(
-  cors({
-    origin: process.env.CLIENT_URL,
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"]
-  })
-);
+
 app.use(express.json());
 
 // Simple health check
